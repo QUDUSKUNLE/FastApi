@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Union
 from pydantic import BaseModel
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from models.item import Item
 
 class className(str, Enum):
@@ -28,10 +28,12 @@ async def root():
 async def read_class(class_name: className):
   return { 'class_name': f'{class_name}'.title(), 'message': f'{class_name} class.'.title() }
 
-
-@app.get('/items')
-async def read_item(skip: int = 0, limit: int = 10):
-  return fake_users_db[skip:skip + limit]
+@app.get('/items/')
+async def read_items(query: Union[str, None] = Query(default=None, max_length=50, regex='^fixedquery$')):
+  results = { 'users': fake_users_db }
+  if query:
+    results.update({ 'query': query })
+  return results
 
 @app.post('/items')
 async def create_item(item: Item):
